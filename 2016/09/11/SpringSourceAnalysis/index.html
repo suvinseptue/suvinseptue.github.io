@@ -1,0 +1,729 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Welcome to join Suvin's technology gossip." />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="Spring-Core核心逻辑源码分析初始化容器
+服务器容器根据配置文件（Tomcat:web.xml）加载ContextInitialListener事件:ContextLoaderListener.contextInitialized();  
+尝试获得parentContext;
+根据parentContext 初始化ApplicationContext;
+将ApplicationRoot为">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring-Core核心逻辑源码分析">
+<meta property="og:url" content="https://suvinseptue.github.io/2016/09/11/SpringSourceAnalysis/index.html">
+<meta property="og:site_name" content="Welcome to join Suvin's technology gossip.">
+<meta property="og:description" content="Spring-Core核心逻辑源码分析初始化容器
+服务器容器根据配置文件（Tomcat:web.xml）加载ContextInitialListener事件:ContextLoaderListener.contextInitialized();  
+尝试获得parentContext;
+根据parentContext 初始化ApplicationContext;
+将ApplicationRoot为">
+<meta property="og:updated_time" content="2017-02-06T13:44:34.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Spring-Core核心逻辑源码分析">
+<meta name="twitter:description" content="Spring-Core核心逻辑源码分析初始化容器
+服务器容器根据配置文件（Tomcat:web.xml）加载ContextInitialListener事件:ContextLoaderListener.contextInitialized();  
+尝试获得parentContext;
+根据parentContext 初始化ApplicationContext;
+将ApplicationRoot为">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://suvinseptue.github.io/2016/09/11/SpringSourceAnalysis/"/>
+
+
+
+
+
+  <title> Spring-Core核心逻辑源码分析 | Welcome to join Suvin's technology gossip. </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Welcome to join Suvin's technology gossip.</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+    
+      <p class="site-subtitle"></p>
+    
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="https://suvinseptue.github.io/2016/09/11/SpringSourceAnalysis/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="Suvin">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="/uploads/avatar.png">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="Welcome to join Suvin's technology gossip.">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="Welcome to join Suvin's technology gossip." src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Spring-Core核心逻辑源码分析
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2016-09-11T17:01:26+08:00">
+                2016-09-11
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="Spring-Core核心逻辑源码分析"><a href="#Spring-Core核心逻辑源码分析" class="headerlink" title="Spring-Core核心逻辑源码分析"></a>Spring-Core核心逻辑源码分析</h2><h4 id="初始化容器"><a href="#初始化容器" class="headerlink" title="初始化容器"></a><a></a>初始化容器</h4><ol>
+<li>服务器容器根据配置文件（Tomcat:web.xml）加载ContextInitialListener事件:<code>ContextLoaderListener.contextInitialized()</code>;  </li>
+<li>尝试获得parentContext;</li>
+<li>根据parentContext <a href="#Initial ApplicationContext">初始化ApplicationContext</a>;</li>
+<li>将<code>ApplicationRoot</code>为key，将context注册到servletContext中;</li>
+<li>如果当前线程的ClassLoader为ContextClassLoader，则将context设置为currentContext;否则将context设置为perThreadContext;  </li>
+</ol>
+<p>####<a name="Initial ApplicationContext">初始化ApplicationContext</a> </p>
+<ol>
+<li>通过<code>BeanUtil.instantiateClass()</code>来创建ConfigurableWebApplicationContext；</li>
+<li>设置context的id、parent、servletContext等属性（不晓得Id有什么用，代码还费了好几行获得best possible id😂）;</li>
+<li>调用<code>ctx.refresh()</code>方法<a href="#start up Spring">构建Spring容器</a>构建Spring容器.</li>
+</ol>
+<blockquote>
+<p>通过refresh方式初始化容器而不是init的方式，而且refresh中有通过beanFactory.getBean方式获取的对象，初始化阶段BeanFactory中是没有BeanDefinition的，因此这里我怀疑和tomcat的热部署有关系。</p>
+</blockquote>
+<p>####<a name="start up Spring">构建Spring容器</a></p>
+<ol>
+<li>根据信号<code>startupShutdownMonitor</code>来作同步，在同步代码块中进行refresh操作;  </li>
+</ol>
+<blockquote>
+<p>Spring注释对startupShutdownMonitor有如下解释：<br>Synchronization monitor for the “refresh” and “destroy”.<br>即destroy方法必须等refresh方法执行完之后才能被调用;  </p>
+</blockquote>
+<ol>
+<li><code>prepareRefresh()</code>:准备刷新，这里有个同步设置变量active，没看懂啥意思；</li>
+<li><code>obtainRefreshBeanFactory()</code>：<a href="#init beanFactory">初始化</a>并获取BeanFactory;</li>
+<li><code>prepareBeanFactory()</code>:初始化BeanFactory的依赖，包括ignoreDependency和硬代码registerDependency;Ignore掉的依赖通常是由别的方式进行注入，比如BeanFactory对象可以由BeanFactoryAware方式注入；获取并维护系统变量和环境变量</li>
+<li><code>invokeBeanFactoryPostProcessor()</code>:根据BeanFactory是否为BeanDefinitionRegistry来调用BeanFactoryPostProcessor,再根据priority、order、nonOrder的顺序调用BeanPostProcessor。在服务器初始化阶段并没有注册BeanFactoryPostProcessor，也许在热部署阶段会执行吧；<em>也就是说，BeanFactoryPostProcessor是在BeanFactory初始化之后Bean对象初始化前执行的</em>(熟悉的BeanFactoryPostProcessor:<code>PropertyPlaceholderConfigure</code>)</li>
+<li><code>registerBeanPostProcessor()</code>:根据<code>BeanFactory.getBeanNamesForType()</code>获取BeanPostProcessor，然后以Priority、Order、NonOrder的顺序注册到BeanPostProcessorList中。BeanPostProcessorList为ArrayList，因此执行顺序为：Priority&gt;Order&gt;NonOrder；</li>
+<li><code>initMessageSource()</code>:获取MessageSource对象，默认为DelegatingMessageSource;</li>
+<li>接下来是注册广播事件监听器、调用子类的onRefresh方法、注册应用监听器；</li>
+<li><code>finishBeanFactoryInitialization()</code>：初始化所有not-lazy-init Bean。也是SpringCore的<a href="#spring-core">核心代码</a>；</li>
+<li><code>finishRefresh</code>:触发加载完成事件；</li>
+</ol>
+<h4 id="初始化BeanFactory"><a href="#初始化BeanFactory" class="headerlink" title="初始化BeanFactory"></a><a name="init beanFactory">初始化BeanFactory</a></h4><ol>
+<li>清空已加载的Bean；</li>
+<li>创建一个内部BeanFactory；</li>
+<li>自定义BeanFactory配置：setAllowBeanDefinitionOverriding、setAllowEagerClassLoading、setAllowCircularReferences、setAllowRawInjectionDespiteWrapping</li>
+<li><code>loadBeanDefinitions()</code>:遍历Resources中的Xml定义的<a href="#loadBeanDefinition">bean加载</a>至BeanDefinition；</li>
+</ol>
+<h4 id="Bean加载"><a href="#Bean加载" class="headerlink" title="Bean加载"></a><a name="loadBeanDefinition">Bean加载</a></h4><ol>
+<li>根据Resource生成Document对象；根据Document的Element的nodeName属性来处理Bean：<ul>
+<li>如果nodeName为Import，则执行<code>importBeanDefinitionResource</code>操作加载import-resource定义的bean：</li>
+<li>如果nodeName为Alias，则将BeanName与Alias关联注册；</li>
+<li>如果nodeName为Bean，则根据属性解析Element生成BeanHolder，将BeanName与BeanDefinition注册到BeanDefinitions缓存中;</li>
+<li>如果nodeName为Beans,则跳至1.处理Beans中的Bean；</li>
+</ul>
+</li>
+</ol>
+<h4 id="核心代码"><a href="#核心代码" class="headerlink" title="核心代码"></a><a name="spring-core">核心代码</a></h4><ol>
+<li>1.<code>finishBeanFactoryInitialization</code>-&gt;<code>preInstantiateSingletons()</code>:同步获取缓存中的<code>beanDefinitionNames</code>，放到局部变量中;</li>
+<li>遍历beanDefinitionName,调用<a href="#get bean">getBean()</a>初始化Bean;</li>
+</ol>
+<h5 id="getBean"><a href="#getBean" class="headerlink" title="getBean()"></a><a name="get bean">getBean()</a></h5><ol>
+<li>首先尝试从singletonObjects、earlySingletonObjects的缓存中获取对象;</li>
+<li>如果对象不为空，则调用<code>getObjectForBeanInstance()</code>方法通过FactoryBean或者对象本身的方式获得Bean对象;</li>
+<li>如果对象不为空，则尝试在ParentBeanFactory中获得对象，并返回；</li>
+<li>如果ParentBeanFactory对象中没有获得Bean对象，则读取BeanDefinistions缓存中获得该Bean的Definition对象；</li>
+<li>拿到BeanDefinition对象后，遍历该对象的dependsOn属性，并将该BeanName与DependsOn的对象Name注册dependentBeanMap中，然后调用<a href="#get bean">getBean()</a>来实例化DependsOn的对象。这里会根据dependentBeanMap来检查是否存在循环依赖，(<em>Spring对Bean属性之间的循坏依赖是有解决方案的，不清楚这里的循坏依赖为什么会直接抛出异常</em>)；</li>
+<li>实例化DependsOn对象后，再根据Bean的Scope属性创建对象，Singleton方式和prototype方式的区别在于Singleton对象在创建的时候首先会在缓存中取对象，如果不存在再<a href="#createBean">createBean()</a>创建一个新的对象放到singletonObjects和earlySingletonObjects中，而prototype类型的则不不会在缓存中取对象，直接创建新对象.</li>
+<li><code>getObjectForBeanInstance()</code><br>:拿到Bean对象之后，确定Bean是否为FactoryBean，如果是则需要通过FactoryBean的方式获取bean，否则直接返回bean.</li>
+</ol>
+<h5 id="createBean"><a href="#createBean" class="headerlink" title="createBean()"></a><a name="createBean">createBean()</a></h5><ol>
+<li>在初始化前，首先调用<code>resolveBeanClass()</code>确保beanClass已经加载到ClassLoader里面；这里会去看BeanDefinition中是否有指定的class，如果没有，则会调用<code>ClassUtils.forName()</code>在ClassLoader容器中加载class；</li>
+<li>确保class已经加载完成之后，执行<code>resolveBeforeInstantiation()</code>，尝试通过<code>InstantiationAwareBeanPostProcessor</code>来创建Bean，如果Bean创建成功，则调用<code>applyBeanPostProcessorsAfterInitialization()</code>应用Bean后处理器，并返回Bean对象；(<em><code>InstantiationAwareBeanPostProcessor</code>这个里面虽然可以返回null，但是返回null之后，Spring容器会认为没有创建bean，重新创建bean</em>)</li>
+<li>如果<code>InstantiationAwareBeanPostProcessor</code>返回null,调用<a href="#doCreateBean">doCreateBean()</a>真正的创建Bean对象.(os:创建个对象前戏真长😴)</li>
+</ol>
+<h5 id="doCreateBean"><a href="#doCreateBean" class="headerlink" title="doCreateBean()"></a><a name="doCreateBean">doCreateBean()</a></h5><ol>
+<li>通过<code>createBeanInstance()</code>创建Bean实例。该方法首先在resolvedConstructor的一系列变量中找到缓存的Constructor，否则找到一个FastConstructor(找最合适的过程比较冗长，这里省略这么多字)，再根据是否有OverrideMethod，来选择通过Reflect的形式还是CGlib的形式创建对象；</li>
+<li>Bean实例化出来之后，调用<code>applyMergedBeanDefinitionPostProcessors()</code>来执行BeanPostProcessor；</li>
+<li>这时候属性还是空的，在注入属性时会发生循环依赖的问题，因此这里会判断是否允许循环依赖，如果允许的话将bean的引用通过<code>ObejctFactory</code>工厂的方式暴露出去；</li>
+<li><code>populateBean()</code>，遍历并且注入依赖。</li>
+<li><code>initializeBean()</code>，调用Bean的初始化方法，init啦，afterPropertiesSet啦。</li>
+</ol>
+<p><hr></p>
+<h4 id="额外补充-实例Bean是什么时候变成Proxy的呢？"><a href="#额外补充-实例Bean是什么时候变成Proxy的呢？" class="headerlink" title="额外补充:实例Bean是什么时候变成Proxy的呢？"></a>额外补充:实例Bean是什么时候变成Proxy的呢？</h4><p>通过<a href="#doCreateBean">doCreateBean()</a>的步骤1.出来的实例这个时候还是对象本身，而Spring暴露出来的Bean又都是以代理形式出现的，那么Spring是什么时候对实例进行代理wrap的呢，通过Debug看到在<code>applyMergedBeanDefinitionPostProcessors()</code>阶段，<br>AbstractAutoProxyCreator以BeanPostProcessor的方式对实例出来的Bean进行AutoProxy，通过判断该实例的Class对象是否有Interfaces，如果有则通过JDK Dynamic的方式代理，否则使用CGlib.</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/07/08/JVM/" rel="next" title="Note for JVM">
+                <i class="fa fa-chevron-left"></i> Note for JVM
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/09/21/NoteOfAbstractQueueSynchronizer/" rel="prev" title="Notes for AbstractQueueSynchronizer">
+                Notes for AbstractQueueSynchronizer <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+          
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/uploads/avatar.png"
+               alt="Suvin" />
+          <p class="site-author-name" itemprop="name">Suvin</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+        
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives">
+                <span class="site-state-item-count">6</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Spring-Core核心逻辑源码分析"><span class="nav-number">1.</span> <span class="nav-text">Spring-Core核心逻辑源码分析</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#初始化容器"><span class="nav-number">1.0.1.</span> <span class="nav-text">初始化容器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#初始化BeanFactory"><span class="nav-number">1.0.2.</span> <span class="nav-text">初始化BeanFactory</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Bean加载"><span class="nav-number">1.0.3.</span> <span class="nav-text">Bean加载</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#核心代码"><span class="nav-number">1.0.4.</span> <span class="nav-text">核心代码</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#getBean"><span class="nav-number">1.0.4.1.</span> <span class="nav-text">getBean()</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#createBean"><span class="nav-number">1.0.4.2.</span> <span class="nav-text">createBean()</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#doCreateBean"><span class="nav-number">1.0.4.3.</span> <span class="nav-text">doCreateBean()</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#额外补充-实例Bean是什么时候变成Proxy的呢？"><span class="nav-number">1.0.5.</span> <span class="nav-text">额外补充:实例Bean是什么时候变成Proxy的呢？</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Suvin</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+      <!-- UY BEGIN -->
+      <script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid="></script>
+      <!-- UY END -->
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+
+</body>
+</html>

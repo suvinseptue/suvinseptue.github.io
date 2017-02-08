@@ -1,0 +1,970 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="库存预估," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="背景：目前广告系统对现有流量结构、流量库存没有量化指标，在广告投放、完成率排查、投放策略优化时没有理论数据支撑。因此需要一套库存系统，能够基于历史流量结构对广告投放进行模拟跑量,并输出流量结构。
+通俗来讲就是有一堆品牌投放的单子，我们不知道这些单子能不能投完。
+面临的问题：如何能够知道平台流量是否能够满足广告需求?这个是我们需要解决的首要问题。我们需要做的是根据广告的投放需求整理出对应该需求的库存">
+<meta property="og:type" content="article">
+<meta property="og:title" content="库存预估的一些叨叨">
+<meta property="og:url" content="https://suvinseptue.github.io/2017/02/07/mine/index.html">
+<meta property="og:site_name" content="Welcome to join Suvin's technology gossip.">
+<meta property="og:description" content="背景：目前广告系统对现有流量结构、流量库存没有量化指标，在广告投放、完成率排查、投放策略优化时没有理论数据支撑。因此需要一套库存系统，能够基于历史流量结构对广告投放进行模拟跑量,并输出流量结构。
+通俗来讲就是有一堆品牌投放的单子，我们不知道这些单子能不能投完。
+面临的问题：如何能够知道平台流量是否能够满足广告需求?这个是我们需要解决的首要问题。我们需要做的是根据广告的投放需求整理出对应该需求的库存">
+<meta property="og:updated_time" content="2017-02-08T02:10:16.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="库存预估的一些叨叨">
+<meta name="twitter:description" content="背景：目前广告系统对现有流量结构、流量库存没有量化指标，在广告投放、完成率排查、投放策略优化时没有理论数据支撑。因此需要一套库存系统，能够基于历史流量结构对广告投放进行模拟跑量,并输出流量结构。
+通俗来讲就是有一堆品牌投放的单子，我们不知道这些单子能不能投完。
+面临的问题：如何能够知道平台流量是否能够满足广告需求?这个是我们需要解决的首要问题。我们需要做的是根据广告的投放需求整理出对应该需求的库存">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://suvinseptue.github.io/2017/02/07/mine/"/>
+
+
+
+
+
+  <title> 库存预估的一些叨叨 | Welcome to join Suvin's technology gossip. </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Welcome to join Suvin's technology gossip.</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+    
+      <p class="site-subtitle"></p>
+    
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="https://suvinseptue.github.io/2017/02/07/mine/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="Suvin">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="/uploads/avatar.png">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="Welcome to join Suvin's technology gossip.">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="Welcome to join Suvin's technology gossip." src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                库存预估的一些叨叨
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-02-07T10:29:16+08:00">
+                2017-02-07
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="背景："><a href="#背景：" class="headerlink" title="背景："></a>背景：</h2><p>目前广告系统对现有流量结构、流量库存没有量化指标，在广告投放、完成率排查、投放策略优化时没有理论数据支撑。因此需要一套库存系统，能够基于历史流量结构对广告投放进行模拟跑量,并输出流量结构。</p>
+<p>通俗来讲就是有一堆品牌投放的单子，我们不知道这些单子能不能投完。</p>
+<h2 id="面临的问题："><a href="#面临的问题：" class="headerlink" title="面临的问题："></a>面临的问题：</h2><h4 id="如何能够知道平台流量是否能够满足广告需求"><a href="#如何能够知道平台流量是否能够满足广告需求" class="headerlink" title="如何能够知道平台流量是否能够满足广告需求?"></a>如何能够知道平台流量是否能够满足广告需求?</h4><p>这个是我们需要解决的首要问题。我们需要做的是根据广告的投放需求整理出对应该需求的库存结构，再从库存结构中看是否满足广告的投放量，那么这个问题就变成建立供需关系模型的问题了。</p>
+<h4 id="我们从需求方面先分析，品牌广告投放的需求有哪些？"><a href="#我们从需求方面先分析，品牌广告投放的需求有哪些？" class="headerlink" title="我们从需求方面先分析，品牌广告投放的需求有哪些？"></a>我们从需求方面先分析，品牌广告投放的需求有哪些？</h4><p>首先有我们都熟悉的地域、分类、平台，然后还有个频次控制（还有些别的需求暂不考虑）。如果订单只有地域、分类、平台的需求的话，那我们需要的库存模型就是分地域、分类别、分平台的VV库存结构，然后根据每一个TA的投放条件，按照维度占比去库存里面扣量即可，也就是分量算法。</p>
+<p>但是品牌广告中有大量投放频次控制的订单，由于频次控制的特殊性，广告的投放量其实已经不是简单的通过VV去衡量了，而是通过UV，即库存的量度需要通过UV来表示。</p>
+<p>也就是说，对于地域、分类、平台的维度，我们依然是采用分量算法去扣量，但是量度方面则变成了UV。</p>
+<h4 id="根据需求，库存结构需要设计成什么样子了呢？"><a href="#根据需求，库存结构需要设计成什么样子了呢？" class="headerlink" title="根据需求，库存结构需要设计成什么样子了呢？"></a>根据需求，库存结构需要设计成什么样子了呢？</h4><p>一句话，我们需要维护的库存结构就是什么平台下什么地域什么分类我们有多少用户。</p>
+<p>从而衍生出下面几个问题：</p>
+<p><strong>频次控制下，如何将投放的CPM转化为所需要的用户？</strong></p>
+<p><strong>既然库存量度是UV，那库存在维度重合情况下怎么办？</strong></p>
+<p><strong>一个核心的问题，库存里量度是UV，那么什么时候这个用户算是被消耗掉了，不能用在其他投放的扣量上了？</strong></p>
+<h2 id="说在前面："><a href="#说在前面：" class="headerlink" title="说在前面："></a>说在前面：</h2><h4 id="输入与输出"><a href="#输入与输出" class="headerlink" title="输入与输出"></a>输入与输出</h4><p>库存估算系统的输入：</p>
+<ol>
+<li>一堆TA的信息；</li>
+</ol>
+<p>现在库存估算系统能输出的数据有：</p>
+<ol>
+<li>一堆TA跑量后的总执行情况，缺量库存结构的分布。</li>
+<li>由于跑量是以TA为单位跑的，因此可以输出某个TA在一堆TA的情况下的执行情况 </li>
+<li>库存结构的数据，如iphone上海电影观看次数与人数的分布情况，观看次数中贴数与人数的分布情况</li>
+<li>理想情况下的覆盖人数，模拟跑量的覆盖人数</li>
+</ol>
+<p>现在能想到的就这么多，应该还可以有待发掘的数据。</p>
+<h4 id="数据准确度"><a href="#数据准确度" class="headerlink" title="数据准确度"></a>数据准确度</h4><p>目前估算的总体数据准确度为90%左右。</p>
+<p>单个TA的估算准确度就有点飘了，这里有很大的优化空间的。</p>
+<h4 id="大体思路"><a href="#大体思路" class="headerlink" title="大体思路"></a>大体思路</h4><ol>
+<li>拿到该月参与估算的订单的投放信息TAn(1,2…n)与上个月的库存信息；</li>
+<li>因为投放定向条件中有地域、分类、平台，因此库存也需要进行投放条件的划分，变成一个个维度的节点库存。</li>
+<li>对TAn逐个进行扣量；根据当前TA的投放条件，找到对应维度的库存，根据维度占比算出该维度应消耗的量，逐个消耗节点库存；</li>
+<li>当节点库存中的量大于当前TA的投放量时，将库存的量减去投放量作为新的库存；</li>
+<li>当节点库存中的量小于当前TA的投放量时，这次则拿节点库存量作为投放量进行扣量，记<code>投放量减去库存量</code>作为缺量数据;</li>
+<li>遍历完所有TA后，当节点库存&gt;0则说明当前维度流量有剩余，当节点库存&lt;=0时，则说明当前节点库存缺量。</li>
+</ol>
+<p>##思路详述</p>
+<p>映射一个现实广告请求的例子：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">TA1 频次1 投放量1000,</div><div class="line">TA2 频次2 投放量2000,</div><div class="line">TA3 频次3 投放量6000,</div><div class="line">TA4 频次4 投放量1000</div></pre></td></tr></table></figure>
+<p>P1-1000个用户每个人看1个视频发起1次广告请求返回3个广告(TA1,TA2,TA3).</p>
+<p>P2:该1000个用户又看了1个视频发起1次广告请求返回3个广告(TA2,TA3,TA4).</p>
+<p>这里我们的库存数据就有</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">1000个用户，2000次3贴的广告请求，对应6000个广告曝光</div></pre></td></tr></table></figure>
+<p>经过P1后:</p>
+<p>TA1由于频次为1，因此它只能消耗了每个用户的1次请求中的1贴，即1000个广告曝光，那么这个时候库存还剩：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">1000个用户，1000次2贴的广告请求对应2000个曝光，以及1000次3贴的广告请求对应3000个曝光</div></pre></td></tr></table></figure>
+<p>TA2由于频次为2，因此它消耗了每个用户的2次请求中的1贴，即2000个曝光，那么库存还剩：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">1000个用户，1000次1贴的广告请求对应1000个曝光，以及1000次2贴的广告请求对应2000个曝光</div></pre></td></tr></table></figure>
+<p>TA3由于频次为3，因此它消耗了每个用户的2次请求中的1贴，即2000个曝光，那么库存还剩：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">1000个用户，1000次1贴的广告请求对应1000个曝光</div></pre></td></tr></table></figure>
+<p>TA4由于频次为4，所以它消耗了剩下的所有库存。</p>
+<p>这个时候库存为0，TA3缺量4000</p>
+<blockquote>
+<p>这里的库存结构既有”人的库存“，又能表现流量库存，所以应用这个库存结构是比较合理的。</p>
+</blockquote>
+<p>这次做的库存估量就是基于上述扣量过程的模拟，应用到生产环境上还需要其他方面的考虑。</p>
+<h4 id="库存结构设计"><a href="#库存结构设计" class="headerlink" title="库存结构设计"></a>库存结构设计</h4><p>“分类”、“城市”、“平台”等投放条件可以作为我们的库存维度，量度方面我们则是“观看广告次数”-“每次请求的广告贴数”-“人数”，量度里面的“观看广告次数”和“每次请求的广告贴数”其实也可以看成两种维度，真正的量度则是“人数”。</p>
+<p>这里的维度是可拓展的，如果维度是相互独立（平台、地域）的话，则可以简单的采用分量算法计算库存；如果维度间具有关联性的话（分类），则需要额外考虑。</p>
+<h2 id="实现细节与要点"><a href="#实现细节与要点" class="headerlink" title="实现细节与要点"></a>实现细节与要点</h2><h4 id="UV库存扣量"><a href="#UV库存扣量" class="headerlink" title="UV库存扣量"></a>UV库存扣量</h4><p>我们将上面的库存描述表示为此次设计的库存结构：</p>
+<table>
+<thead>
+<tr>
+<th>观看广告个数</th>
+<th>贴次</th>
+<th>请求次数</th>
+<th>人数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>6</td>
+<td>3</td>
+<td>2</td>
+<td>1000</td>
+</tr>
+</tbody>
+</table>
+<p>之前提到的扣量例子只是简单场景下的逻辑，现在我们举几个复杂的例子更深入地了解模拟过程的细节。</p>
+<p><hr><br>库存结构：</p>
+<table>
+<thead>
+<tr>
+<th>观看广告个数</th>
+<th>贴次</th>
+<th>请求次数</th>
+<th>人数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>50</td>
+<td>5</td>
+<td>10</td>
+<td>10</td>
+</tr>
+</tbody>
+</table>
+<p>现在VV库存:10(人数)*50(观看广告个数)=500,UV库存10，对TA(频次：4，投放量：16)进行扣量:</p>
+<ul>
+<li>这里假设频次4的人均观看为4，那么需要4个人的4次/人广告观看；</li>
+<li><p>在库存节点中扣除4个人的4次/人广告观看：</p>
+<ul>
+<li><p>首先我们从库存中拿出4个人来完成该TA的扣量,那么库存就分为两部分：<br>进行扣量的库存1：</p>
+<p>  |观看广告个数|贴次|请求次数|人数|<br>|—–|—–|—-|—–|<br>|50|5|10|4|</p>
+<p>  剩下的库存2：</p>
+<p>  |观看广告个数|贴次|请求次数|人数|<br>|—–|—–|—-|—–|<br>|50|5|10|6|</p>
+</li>
+<li><p>该TA消耗的量为 4个人的4次/人 5贴中一贴的广告，那么库存1就变为 4次/人 4贴 和 6次/人 5贴，即：</p>
+<p>  进行扣量的库存1：</p>
+<p>  |观看广告个数|贴次|请求次数|人数|<br>|—–|—–|—-|—–|<br>|30|5|6|4|<br>|16|4|4|4|</p>
+</li>
+<li><p>再加上没有参与扣量的库存2之后，新的库存结构变为：</p>
+<p>  |观看广告个数|贴次|请求次数|人数|<br>|—–|—–|—-|—–|<br>|50|5|10|6|<br>|30|5|6|4|<br>|16|4|4|4|</p>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><p>新的库存节点中VV量:6*50+4*30+4*16=484,VV库存是能对的上的,但是UV库存就变为16了，那明显是不对的。这里我们对进行扣量的库存1做一个合并操作，让UV库存一致。</p>
+<p>  由于这里观看广告个数30的4人和观看广告个数16的4人，是同样的人，但是这样的表示方式会使得别的TA在扣量时会认为是不同的4个人，那么我们将这4人按照观看广告个数的占比划分为：46个观看广告个数里 每次看4帖的 16*4/(30+16) = 1.4人和 46个观看广告个数里 每次看 5贴的16*4/(30+16) = 2.6 人</p>
+<p>  ,那么新的库存结构为：</p>
+<p>  |观看广告个数|贴次|请求次数|人数|<br>|—–|—–|—-|—–|<br>|50|5|10|6|<br>|46|4|11.5|1.4|<br>|46|5|9.2|2.6|</p>
+</li>
+</ul>
+<ul>
+<li>新的库存节点中VV量:6*50+1.4*46+1.6*46=484,UV库存:6+1.4+2.6=10,现在VV和UV库存也都一致了。</li>
+<li>只要保证对每一个TA扣量前后，库存的量都能保持一致的话，那么整个扣量过程就是准确的。</li>
+</ul>
+<p>这时候如果需要对另外一个TA2(频次：2 投放量 16，即需要8人)进行扣量的话，我们通过分量算法得出</p>
+<p>观看广告个数50 维度里面需要扣4.8人，</p>
+<p>观看广告个数46 贴次4 的维度里面需要扣1.12人，</p>
+<p>观看广告个数 46 贴次5 的维度里面需要扣2.08人</p>
+<p>然后依次对这三个维度进行上面的扣量过程,</p>
+<p>观看广告个数50 扣量后库存：</p>
+<table>
+<thead>
+<tr>
+<th>观看广告个数</th>
+<th>贴次</th>
+<th>请求次数</th>
+<th>人数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>50</td>
+<td>5</td>
+<td>-</td>
+<td>1.2</td>
+</tr>
+<tr>
+<td>48</td>
+<td>4</td>
+<td>-</td>
+<td>0.8</td>
+</tr>
+<tr>
+<td>48</td>
+<td>5</td>
+<td>-</td>
+<td>4</td>
+</tr>
+</tbody>
+</table>
+<p>观看广告个数46 贴次4 扣量后库存：</p>
+<table>
+<thead>
+<tr>
+<th>观看广告个数</th>
+<th>贴次</th>
+<th>请求次数</th>
+<th>人数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>46</td>
+<td>4</td>
+<td>-</td>
+<td>0.28</td>
+</tr>
+<tr>
+<td>44</td>
+<td>3</td>
+<td>-</td>
+<td>0.15</td>
+</tr>
+<tr>
+<td>44</td>
+<td>4</td>
+<td>-</td>
+<td>0.97</td>
+</tr>
+</tbody>
+</table>
+<p>观看广告个数46 贴次5 扣量后库存：</p>
+<table>
+<thead>
+<tr>
+<th>观看广告个数</th>
+<th>贴次</th>
+<th>请求次数</th>
+<th>人数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>46</td>
+<td>5</td>
+<td>-</td>
+<td>0.52</td>
+</tr>
+<tr>
+<td>44</td>
+<td>4</td>
+<td>-</td>
+<td>0.38</td>
+</tr>
+<tr>
+<td>44</td>
+<td>5</td>
+<td>-</td>
+<td>1.7</td>
+</tr>
+</tbody>
+</table>
+<p>综合一下的库存结构为：</p>
+<table>
+<thead>
+<tr>
+<th>观看广告个数</th>
+<th>贴次</th>
+<th>请求次数</th>
+<th>人数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>50</td>
+<td>5</td>
+<td>-</td>
+<td>1.2</td>
+</tr>
+<tr>
+<td>48</td>
+<td>5</td>
+<td>-</td>
+<td>4</td>
+</tr>
+<tr>
+<td>48</td>
+<td>4</td>
+<td>-</td>
+<td>0.8</td>
+</tr>
+<tr>
+<td>46</td>
+<td>5</td>
+<td>-</td>
+<td>0.52</td>
+</tr>
+<tr>
+<td>46</td>
+<td>4</td>
+<td>-</td>
+<td>0.28</td>
+</tr>
+<tr>
+<td>44</td>
+<td>3</td>
+<td>-</td>
+<td>0.15</td>
+</tr>
+<tr>
+<td>44</td>
+<td>5</td>
+<td>-</td>
+<td>1.7</td>
+</tr>
+<tr>
+<td>44</td>
+<td>4</td>
+<td>-</td>
+<td>1.35</td>
+</tr>
+</tbody>
+</table>
+<p>最后我们库存中剩余的VV总和为468，UV总和为10。</p>
+<hr>
+
+<p>下面罗列些扣量细节，不详述原理：</p>
+<ul>
+<li>实际参与计算的频次=Min(TA频次,观看次数/库存贴数)</li>
+<li>当UV库存不满足TA的投放量时，则表现为缺量，并将UV库存作为投放量扣量；</li>
+<li>产生的新库存节点累加过程在每一个TA扣量结束之后执行；</li>
+</ul>
+<h4 id="投放量转化"><a href="#投放量转化" class="headerlink" title="投放量转化"></a>投放量转化</h4><p>现在广告系统里面的投放量是曝光，而库存中的量是“人”，所以需要将曝光量(VV)转化为“需要多少人观看（即UV）”，这里转化关系中存在一个变量“频次”。举个例子：100的VV在频次为1的情况下需要100人观看；100的VV在频次为2的情况下需要x个看1次的观众和y个看2次的观众，总共需要（x+y）人。为了计算（x+y）的值，我们需要知道历史数据中看1次和看2次观众的平均观看次数z（1&lt;=z&lt;=2），通过vv/z我们就可以知道(x+y)的值。因此我们只需要算出平均观看次数即可。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">平均观看次数=sum(f(x))/总人数;</div><div class="line">f(x)=&#123;</div><div class="line">    观看x次的人数*x (x&lt;=频次);</div><div class="line">    观看x次的人数*频次 (x&gt;频次);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这里我们通过历史数据算出1~500频次对应的人均观看次数(fqRate),以此进行投放量转化。</p>
+<h4 id="多分类的人群重复"><a href="#多分类的人群重复" class="headerlink" title="多分类的人群重复"></a>多分类的人群重复</h4><p>频道分类作为库存维度之一，所表现的UV量是相互独立的，这样的库存对于投放单个分类的TA是适用的，但是对于投放多分类的TA来说，分类维度的UV库存是大于实际UV库存的，因为多分类的情况下用户是有重合度的，分类越多，重合度越大，预估的UV库存也就与实际值偏差越大。</p>
+<blockquote>
+<p>在加入分类因素前，预估的出来的缺量结果与实际值差20%，而将分类情况考虑进去之后，预估与实际差值在10%以内。</p>
+</blockquote>
+<p>因此，在对多分类TA跑量时，我们使用的UV库存应该是所投放的多分类维度下的UV库存，而不是简单的将分类UV库存相加；这里还有一个问题就是多分类维度的库存扣量完之后，如何关联地反应到实际库存结构中，作为其他TA跑量的库存呢？</p>
+<p>如果我们在分类上建的维度是多分类的话，那么联动更新的算法肯定就更复杂了。</p>
+<p>所以这里设计的是我们将单分类维度的库存作为Base库存，多分类库存则每次由Base库存衍生出来作为临时扣量库存，TA在多分类库存下扣的量由分量算法倒推回Base库存中做更新。这样就能做到联动更新了。衍生多分类库存算法有两个思路：</p>
+<ul>
+<li>Jaccard相似度：</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">	Jaccard相似度</div><div class="line">判断两个集合是否相等，一般使用称之为Jaccard相似度的算法（后面用Jac(S1,S2)来表示集合S1和S2的Jaccard相似度）。举个列子，集合X = &#123;a,b,c&#125;，Y = &#123;b,c,d&#125;。那么Jac(X,Y) = 2 / 3 = 0.67。也就是说，结合X和Y有67%的元素相同。下面是形式的表述Jaccard相似度公式：</div><div class="line"></div><div class="line">Jac(X,Y) = |X∩Y| / |X∪Y|</div><div class="line"></div><div class="line">也就是两个结合交集的个数比上两个集合并集的个数。范围在[0,1]之间。</div></pre></td></tr></table></figure>
+<ul>
+<li>基于hyperloglog基数算法算出维度间的重合度；</li>
+</ul>
+<p>目前采用的是方法2。</p>
+<h4 id="跨月TA的处理"><a href="#跨月TA的处理" class="headerlink" title="跨月TA的处理"></a>跨月TA的处理</h4><p>目前对于跨月投放的TA估算准确度非常低，会影响整体的估算流程。主要是因为目前估算的周期为1个月，在跨月的时候，人的观看次数会被认定为0，与线上逻辑有出入。</p>
+<h2 id="日后待优化点"><a href="#日后待优化点" class="headerlink" title="日后待优化点"></a>日后待优化点</h2><ul>
+<li>代码分模块：<ul>
+<li>库存数量预估；根据历史库存波动情况预估当月库存，并输出库存结构用作模拟TA跑量</li>
+<li>类别重合率模块；</li>
+<li>TA预处理模块；处理频次转化，频道定向转化为类别定向；（7月份波动）</li>
+<li>核心计算模块；</li>
+</ul>
+</li>
+</ul>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/库存预估/" rel="tag"># 库存预估</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/01/10/ADX竞价请求响应时间优化——基于网络延迟的动态规划/" rel="next" title="ADX竞价请求响应时间优化——基于网络延迟的动态规划">
+                <i class="fa fa-chevron-left"></i> ADX竞价请求响应时间优化——基于网络延迟的动态规划
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+          
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/uploads/avatar.png"
+               alt="Suvin" />
+          <p class="site-author-name" itemprop="name">Suvin</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+        
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives">
+                <span class="site-state-item-count">6</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#背景："><span class="nav-number">1.</span> <span class="nav-text">背景：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#面临的问题："><span class="nav-number">2.</span> <span class="nav-text">面临的问题：</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#如何能够知道平台流量是否能够满足广告需求"><span class="nav-number">2.0.1.</span> <span class="nav-text">如何能够知道平台流量是否能够满足广告需求?</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#我们从需求方面先分析，品牌广告投放的需求有哪些？"><span class="nav-number">2.0.2.</span> <span class="nav-text">我们从需求方面先分析，品牌广告投放的需求有哪些？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#根据需求，库存结构需要设计成什么样子了呢？"><span class="nav-number">2.0.3.</span> <span class="nav-text">根据需求，库存结构需要设计成什么样子了呢？</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#说在前面："><span class="nav-number">3.</span> <span class="nav-text">说在前面：</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#输入与输出"><span class="nav-number">3.0.1.</span> <span class="nav-text">输入与输出</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#数据准确度"><span class="nav-number">3.0.2.</span> <span class="nav-text">数据准确度</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#大体思路"><span class="nav-number">3.0.3.</span> <span class="nav-text">大体思路</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#库存结构设计"><span class="nav-number">3.0.4.</span> <span class="nav-text">库存结构设计</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实现细节与要点"><span class="nav-number">4.</span> <span class="nav-text">实现细节与要点</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#UV库存扣量"><span class="nav-number">4.0.1.</span> <span class="nav-text">UV库存扣量</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#投放量转化"><span class="nav-number">4.0.2.</span> <span class="nav-text">投放量转化</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#多分类的人群重复"><span class="nav-number">4.0.3.</span> <span class="nav-text">多分类的人群重复</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#跨月TA的处理"><span class="nav-number">4.0.4.</span> <span class="nav-text">跨月TA的处理</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#日后待优化点"><span class="nav-number">5.</span> <span class="nav-text">日后待优化点</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Suvin</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+      <!-- UY BEGIN -->
+      <script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid="></script>
+      <!-- UY END -->
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+
+</body>
+</html>
